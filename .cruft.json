@@ -1,0 +1,21 @@
+{
+  "template": "https://github.com/PerchunPak/python-template",
+  "commit": "7e6bb5d2721415707baf66b2b7982d525c0675c9",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "cookieclicker-tas",
+      "organization": "PerchunPak",
+      "project_description": "Cookieclicker speedrun script which doesn't use `Game` object.",
+      "other_languages_support": "n",
+      "ukrainian_language_support": "n",
+      "russian_language_support": "n",
+      "license": "AGPL3",
+      "_copy_without_render": [
+        "docs/_autoapi_templates/python"
+      ],
+      "_template": "https://github.com/PerchunPak/python-template"
+    }
+  },
+  "directory": null
+}
