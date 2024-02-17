@@ -9,18 +9,37 @@
 
 Cookieclicker speedrun script which doesn't use `Game` object.
 
+(Written in one night (~5 hours), so don't expect this to be perfect, though I am impressed how good it is)
+
+# WORKS ONLY WITH v2.052
+
+Future versions may break something.
+
 ## Features
 
-- Free! We don't want any money from you!
-- Add yours!
+- Restarts every time with a completely new browser.
+- Automatically blocks ads.
+- Automatically sets the most performant settings.
+- Automatically opens "Stats" page.
+- Automatically renames bakery (cuz it gives an achievement so why not).
+- Automatically clicks the cookie every 0.001 second.
+- Automatically collects golden cookies.
+- Automatically buys the most efficient buildings at the moment (cookies per second divided by cost - no the best formula, but good enough).
+- Automatically buys upgrades.
 
-## Installing
+## Space to improve
 
-```bash
-pip install cookieclicker-tas
-```
+- Which upgrades worth buying? Currently, it buys just everything that it can afford.
+- Better formula for buying buildings.
+- Farm achievements to increase milk.
+- Hardcoded route would be better for speedrun, this program does everything in `while True` loop.
+- More features of the game (like prestige and other stuff).
 
-## Installing for local developing
+## Benchmarks
+
+TODO (maybe? if I will not be lazy)
+
+## How to run
 
 ```bash
 git clone https://github.com/PerchunPak/cookieclicker-tas.git
@@ -29,7 +48,7 @@ cd cookieclicker-tas
 
 ### Installing `poetry`
 
-Next we need install `poetry` with [recommended way](https://python-poetry.org/docs/master/#installation).
+Next we need install `poetry` with [the recommended way](https://python-poetry.org/docs/master/#installation).
 
 If you use Linux, use command:
 
@@ -46,37 +65,34 @@ If you use Windows, open PowerShell with admin privileges and use:
 ### Installing dependencies
 
 ```bash
-poetry install --no-dev
+poetry install --only main
 ```
 
-### Configuration
+### Downloading browsers
 
-All configuration happens in `config.yml`, or with enviroment variables.
+`playwright` requires browsers to be installed, so you need to run:
+
+```bash
+poetry run playwright install
+```
+
+### Running the app
+
+And finally:
+
+```bash
+poetry run python -m src
+```
 
 ### If something is not clear
 
-You can always write me!
-
-## Example
-
-```py
-from cookieclicker_tas.example import some_function
-
-print(some_function(3, 4))
-# => 7
-```
-
-## Updating
-
-```bash
-pip install -U cookieclicker-tas
-```
-
-### For local development
-
-For updating, just re-download repository (do not forget save config),
-if you used `git` for downloading, just run `git pull`.
+You can always write to me!
 
 ## Thanks
 
+Huge thanks to the developers, who made the game practically source-available. Writing this thing was a joy,
+not as it usually is with browser-scripting.
+
 This project was generated with [python-template](https://github.com/PerchunPak/python-template).
+
+Also, check out https://www.youtube.com/watch?v=dQf0rQslJmE.
