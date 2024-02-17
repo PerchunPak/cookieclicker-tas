@@ -1,8 +1,7 @@
 """Module for some useful utils."""
-import sys
+import asyncio
 import typing as t
-
-from loguru import logger
+from functools import wraps
 
 
 class Singleton(type):
@@ -25,30 +24,13 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-def setup_logging() -> None:
-    """Setup logging for the addon."""
-    from src import config as config_module  # circular import
+_P = t.ParamSpec("_P")
+_R = t.TypeVar("_R", bound=t.Any)
 
-    config = config_module.Config()
 
-    logger.remove()
-    if config.logging.level < config_module.LoggingLevel.WARNING:
-        logger.add(
-            sys.stdout,
-            level=config.logging.level,
-            filter=lambda record: record["level"].no < config_module.LoggingLevel.WARNING,
-            colorize=True,
-            serialize=config.logging.json,
-            backtrace=True,
-            diagnose=True,
-        )
-    logger.add(
-        sys.stderr,
-        level=config.logging.level,
-        filter=lambda record: record["level"].no >= config_module.LoggingLevel.WARNING,
-        colorize=True,
-        serialize=config.logging.json,
-        backtrace=True,
-        diagnose=True,
-    )
-    logger.debug("Logging was setup!")
+def async_to_sync(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, _R]:
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(f(*args, **kwargs))
+
+    return wrapper

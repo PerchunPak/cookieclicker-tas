@@ -1,16 +1,19 @@
-import asyncio
-
+import typer, typing as t
 from loguru import logger
 
+import src.logging
 from src import utils
 
 
-async def main() -> None:
-    utils.setup_logging()
+@utils.async_to_sync
+async def main(
+    logging_level: src.logging.LoggingLevel = "info",
+) -> None:
+    src.logging.setup_logging(logging_level)
     logger.info("Hello World!")
 
     # start app here
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    typer.run(main)
