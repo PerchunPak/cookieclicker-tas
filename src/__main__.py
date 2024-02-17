@@ -18,6 +18,7 @@ async def main(
     async with Logic.init() as logic:
         await logic.remove_ads()
         await logic.set_settings()
+        await logic.open_stats_page()
         await logic.rename_bakery()
         await logic.click_cookie_in_the_background()
         logger.success("All setup done! Starting to run infinite loop!")

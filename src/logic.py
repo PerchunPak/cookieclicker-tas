@@ -59,6 +59,10 @@ class Logic:
         await self.page.click("#notifsButton")
         await self.page.click("#prefsButton > .subButton")
 
+    async def open_stats_page(self) -> None:
+        logger.info("Opening stats page...")
+        await self.page.click("#statsButton")
+
     async def rename_bakery(self) -> None:
         logger.info("Renaming bakery...")
         await self.page.click("#bakeryName")
