@@ -17,6 +17,7 @@ async def main(
         await logic.remove_ads()
         await logic.set_settings()
         await logic.rename_bakery()
+        await logic.click_in_the_background()
 
         await logic.page.wait_for_timeout(500000)
 

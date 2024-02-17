@@ -1,4 +1,6 @@
+import asyncio
 import typing as t
+from asyncio import CancelledError
 from contextlib import asynccontextmanager
 
 from loguru import logger
@@ -61,3 +63,19 @@ class Logic:
         await self.page.click("#bakeryName")
         await self.page.fill("#bakeryNameInput", "Perchun's TAS")
         await self.page.click("#promptOption0")
+
+    async def click_loop(self) -> t.Never:
+        while True:
+            try:
+                await self.page.click("#bigCookie")
+            except Exception as e:
+                if isinstance(e, CancelledError):  # probably application exited
+                    logger.error("click_loop: CancelledError")
+                    return  # type: ignore[misc] # Return statement in function which does not return # see upper
+                else:
+                    logger.exception(e)
+            else:
+                await asyncio.sleep(0.001)
+
+    async def click_in_the_background(self) -> None:
+        await asyncio.create_task(self.click_loop(), name="click_loop")
