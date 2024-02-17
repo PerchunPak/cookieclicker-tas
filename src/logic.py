@@ -113,8 +113,9 @@ class Logic:
         upgrade_elements = await self.page.query_selector_all("#upgrades > *.upgrade.enabled")
         for upgrade in upgrade_elements:
             upgrade_id = await upgrade.get_attribute("id")
+            assert upgrade_id is not None
 
-            await upgrade.hover()
+            await self.page.locator("#" + upgrade_id).hover()
             price_as_element = await self.page.query_selector("#tooltipCrate > div > span.price")
 
             if price_as_element is None:
