@@ -3,8 +3,6 @@ import asyncio
 import typing as t
 from functools import wraps
 
-from loguru import logger
-
 
 class Singleton(type):
     """Metaclass to do Singleton pattern."""
@@ -34,15 +32,6 @@ def async_to_sync(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, _R]:  # 
     @wraps(f)
     def wrapper(*args, **kwargs):
         return asyncio.run(f(*args, **kwargs))  # type: ignore[arg-type] # "Callable" != "Awaitable" for some reason
-
-    return wrapper
-
-
-def log(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, t.Awaitable[_R]]:  # type: ignore[misc] # Explicit "Any" is not allowed
-    @wraps(f)
-    async def wrapper(*args, **kwargs):
-        logger.trace(f"{f.__name__}({args=}, {kwargs=})")
-        return await f(*args, **kwargs)
 
     return wrapper
 
