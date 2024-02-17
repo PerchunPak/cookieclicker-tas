@@ -22,10 +22,13 @@ class Logic:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)
             page = await browser.new_page()
+            logger.info("Navigating to page...")
             await page.goto("https://orteil.dashnet.org/cookieclicker/", wait_until="domcontentloaded")
             await page.evaluate("window.localStorageSet('CookieClickerLang', 'EN');")  # set language
+            logger.info("Waiting for page to load...")
             await page.wait_for_load_state("networkidle")
 
+            logger.info("Executing our steps...")
             yield cls(browser, page)
 
             await browser.close()
