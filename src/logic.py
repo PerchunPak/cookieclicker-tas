@@ -5,7 +5,7 @@ from loguru import logger
 from playwright.async_api import Browser, Page, async_playwright
 
 from src.building import Building
-from src.utils import extract_number_from_string, log
+from src.utils import extract_number_from_string, log, tooltip_lock
 
 
 class Logic:
@@ -18,10 +18,6 @@ class Logic:
     @classmethod
     @asynccontextmanager
     async def init(cls) -> t.AsyncIterator[t.Self]:
-        for method in dir(cls):  # decorate everything with `utils.log`
-            if not method.startswith("_") or method == "init":
-                setattr(cls, method, log(getattr(cls, method)))
-
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)
             page = await browser.new_page()
@@ -37,6 +33,7 @@ class Logic:
             await browser.close()
 
     async def remove_ads(self) -> None:
+        logger.info("Removing ads...")
         elements_to_block = [
             "#google_esf",  # root google ad stuff
             "#smallSupport,.ifNoAds",  # ads upper upgrades
@@ -48,6 +45,7 @@ class Logic:
         )
 
     async def set_settings(self) -> None:
+        logger.info("Setting settings...")
         await self.page.click("#prefsButton > .subButton")
         await self.page.fill("#volumeSlider", "0")
         await self.page.click("#fancyButton")
@@ -61,6 +59,7 @@ class Logic:
         await self.page.click("#prefsButton > .subButton")
 
     async def rename_bakery(self) -> None:
+        logger.info("Renaming bakery...")
         await self.page.click("#bakeryName")
         await self.page.fill("#bakeryNameInput", "Perchun's TAS")
         await self.page.click("#promptOption0")
@@ -98,3 +97,21 @@ class Logic:
         if best_building.costs <= self.balance:
             logger.info(f"Buying building number {best_building.id} for {best_building.costs} cookies")
             await self.page.click(f"#{best_building.html_id}")
+
+    async def buy_upgrades_background(self) -> None:
+        upgrade_elements = await self.page.query_selector_all("#upgrades > *.upgrade.enabled")
+        for upgrade in upgrade_elements:
+            upgrade_id = await upgrade.get_attribute("id")
+
+            await upgrade.hover()
+            async with tooltip_lock:
+                price_as_element = await self.page.query_selector("#tooltipCrate > div > span.price")
+
+            if price_as_element is None:
+                logger.error(f"Could not find price for upgrade {upgrade_id}")
+                continue
+
+            price = extract_number_from_string(await price_as_element.inner_text())
+            if price <= self.balance:
+                logger.info(f"Buying upgrade {upgrade_id} for {price} cookies")
+                await self.page.click(f"#{upgrade_id}")

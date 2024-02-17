@@ -30,10 +30,12 @@ async def main(
         await logic.remove_ads()
         await logic.set_settings()
         await logic.rename_bakery()
+        logger.success("All setup done! Running background tasks...")
 
         asyncio.create_task(_background_wrapper(logic.click_cookie_background, 0.001))
         asyncio.create_task(_background_wrapper(logic.get_balance_background, 1))
-        asyncio.create_task(_background_wrapper(logic.buy_buildings_background, 3))
+        asyncio.create_task(_background_wrapper(logic.buy_buildings_background, 1))
+        asyncio.create_task(_background_wrapper(logic.buy_upgrades_background, 3))
 
         await logic.page.wait_for_timeout(500000)
 

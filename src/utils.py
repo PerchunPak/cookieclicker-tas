@@ -2,12 +2,15 @@
 import asyncio
 import typing as t
 from functools import wraps
-from pathlib import Path
 
 from loguru import logger
 
-BASE_DIR = Path(__file__).parent.parent
-(BASE_DIR / "data").mkdir(exist_ok=True)
+tooltip_lock = asyncio.Lock()
+"""Lock for tooltip operations.
+
+As in cookie clicker tooltip is a singleton, every time we want to get information
+from it, we should not run into race conditions.
+"""
 
 
 class Singleton(type):
