@@ -5,13 +5,6 @@ from functools import wraps
 
 from loguru import logger
 
-tooltip_lock = asyncio.Lock()
-"""Lock for tooltip operations.
-
-As in cookie clicker tooltip is a singleton, every time we want to get information
-from it, we should not run into race conditions.
-"""
-
 
 class Singleton(type):
     """Metaclass to do Singleton pattern."""

@@ -3,7 +3,7 @@ import typing as t
 
 from playwright.async_api import Page
 
-from src.utils import extract_number_from_string, tooltip_lock
+from src.utils import extract_number_from_string
 
 
 @dataclasses.dataclass
@@ -21,8 +21,7 @@ class Building:
         int_id = int(html_id.removeprefix("product"))
 
         await (await page.query_selector("#" + html_id)).hover()  # type: ignore[union-attr] # can be None, but not in runtime
-        async with tooltip_lock:
-            produces = await page.query_selector("#tooltipBuilding > .descriptionBlock > b")
+        produces = await page.query_selector("#tooltipBuilding > .descriptionBlock > b")
 
         price = await page.query_selector(f"#productPrice{int_id}")
         if price is None:

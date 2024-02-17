@@ -1,5 +1,4 @@
 import asyncio
-import typing as t
 
 import typer
 from loguru import logger
@@ -7,16 +6,6 @@ from loguru import logger
 import src.logging
 from src import utils
 from src.logic import Logic
-
-
-async def _background_wrapper(func: t.Callable[..., t.Awaitable[None]], sleep_time: float) -> t.Never:  # type: ignore[misc] # Explicit "Any" is not allowed
-    while True:
-        try:
-            await func()
-        except Exception as e:
-            logger.exception(e)
-        else:
-            await asyncio.sleep(sleep_time)
 
 
 @utils.async_to_sync
@@ -30,14 +19,14 @@ async def main(
         await logic.remove_ads()
         await logic.set_settings()
         await logic.rename_bakery()
-        logger.success("All setup done! Running background tasks...")
+        await logic.click_cookie_in_the_background()
+        logger.success("All setup done! Starting to run infinite loop!")
 
-        asyncio.create_task(_background_wrapper(logic.click_cookie_background, 0.001))
-        asyncio.create_task(_background_wrapper(logic.get_balance_background, 1))
-        asyncio.create_task(_background_wrapper(logic.buy_buildings_background, 1))
-        asyncio.create_task(_background_wrapper(logic.buy_upgrades_background, 3))
-
-        await logic.page.wait_for_timeout(500000)
+        while True:
+            await logic.update_balance()
+            await logic.buy_buildings()
+            await logic.buy_upgrades()
+            await asyncio.sleep(1)
 
 
 if __name__ == "__main__":

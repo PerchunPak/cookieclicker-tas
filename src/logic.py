@@ -1,3 +1,4 @@
+import asyncio
 import typing as t
 from contextlib import asynccontextmanager
 
@@ -5,7 +6,7 @@ from loguru import logger
 from playwright.async_api import Browser, Page, async_playwright
 
 from src.building import Building
-from src.utils import extract_number_from_string, log, tooltip_lock
+from src.utils import extract_number_from_string
 
 
 class Logic:
@@ -64,10 +65,20 @@ class Logic:
         await self.page.fill("#bakeryNameInput", "Perchun's TAS")
         await self.page.click("#promptOption0")
 
-    async def click_cookie_background(self) -> None:
-        await self.page.click("#bigCookie")
+    async def click_cookie_loop(self) -> None:
+        while True:
+            try:
+                await self.page.click("#bigCookie")
+            except Exception as e:
+                logger.exception(e)
+            else:
+                await asyncio.sleep(0.001)
 
-    async def get_balance_background(self) -> None:
+    async def click_cookie_in_the_background(self) -> None:
+        logger.info("Starting clicking cookie in the background...")
+        asyncio.create_task(self.click_cookie_loop())
+
+    async def update_balance(self) -> None:
         element = await self.page.query_selector("#cookies > span.monospace")
         assert element is not None
         self.balance = int(extract_number_from_string(await element.inner_text()))
@@ -88,7 +99,7 @@ class Logic:
 
         return max(enumerate(buildings), key=lambda x: x[1].produces or buildings[x[0] - 1].produces * 10)[1]  # type: ignore[operator] # it just cant
 
-    async def buy_buildings_background(self) -> None:
+    async def buy_buildings(self) -> None:
         buildings = await self._get_buyable_buildings()
         if not buildings:
             return
@@ -98,14 +109,13 @@ class Logic:
             logger.info(f"Buying building number {best_building.id} for {best_building.costs} cookies")
             await self.page.click(f"#{best_building.html_id}")
 
-    async def buy_upgrades_background(self) -> None:
+    async def buy_upgrades(self) -> None:
         upgrade_elements = await self.page.query_selector_all("#upgrades > *.upgrade.enabled")
         for upgrade in upgrade_elements:
             upgrade_id = await upgrade.get_attribute("id")
 
             await upgrade.hover()
-            async with tooltip_lock:
-                price_as_element = await self.page.query_selector("#tooltipCrate > div > span.price")
+            price_as_element = await self.page.query_selector("#tooltipCrate > div > span.price")
 
             if price_as_element is None:
                 logger.error(f"Could not find price for upgrade {upgrade_id}")
