@@ -1,4 +1,3 @@
-import asyncio
 import typing as t
 from contextlib import asynccontextmanager
 
@@ -66,31 +65,13 @@ class Logic:
         await self.page.fill("#bakeryNameInput", "Perchun's TAS")
         await self.page.click("#promptOption0")
 
-    async def click_loop(self) -> t.Never:
-        while True:
-            try:
-                await self.page.click("#bigCookie")
-            except Exception as e:
-                logger.exception(e)
-            else:
-                await asyncio.sleep(0.001)
+    async def click_cookie_background(self) -> None:
+        await self.page.click("#bigCookie")
 
-    async def click_in_the_background(self) -> None:
-        asyncio.create_task(self.click_loop(), name="click_loop")
-
-    async def get_balance_loop(self) -> t.Never:
-        while True:
-            try:
-                element = await self.page.query_selector("#cookies > span.monospace")
-                assert element is not None
-                self.balance = int(extract_number_from_string(await element.inner_text()))
-            except Exception as e:
-                logger.exception(e)
-            else:
-                await asyncio.sleep(1)
-
-    async def get_balance_in_the_background(self) -> None:
-        asyncio.create_task(self.get_balance_loop(), name="get_balance_loop")
+    async def get_balance_background(self) -> None:
+        element = await self.page.query_selector("#cookies > span.monospace")
+        assert element is not None
+        self.balance = int(extract_number_from_string(await element.inner_text()))
 
     async def _get_buyable_buildings(self) -> list[Building]:
         buildings = await self.page.query_selector_all("#products > .product.unlocked")
@@ -108,21 +89,12 @@ class Logic:
 
         return max(enumerate(buildings), key=lambda x: x[1].produces or buildings[x[0] - 1].produces * 10)[1]  # type: ignore[operator] # it just cant
 
-    async def buy_buildings_loop(self) -> t.Never:
-        while True:
-            try:
-                buildings = await self._get_buyable_buildings()
-                if not buildings:
-                    continue
+    async def buy_buildings_background(self) -> None:
+        buildings = await self._get_buyable_buildings()
+        if not buildings:
+            return
 
-                best_building = self._get_the_best_thing_to_buy(buildings)
-                if best_building.costs <= self.balance:
-                    logger.info(f"Buying building number {best_building.id} for {best_building.costs} cookies")
-                    await self.page.click(f"#{best_building.html_id}")
-            except Exception as e:
-                logger.exception(e)
-            else:
-                await asyncio.sleep(1)
-
-    async def buy_buildings_in_the_background(self) -> None:
-        asyncio.create_task(self.buy_buildings_loop(), name="buy_buildings_loop")
+        best_building = self._get_the_best_thing_to_buy(buildings)
+        if best_building.costs <= self.balance:
+            logger.info(f"Buying building number {best_building.id} for {best_building.costs} cookies")
+            await self.page.click(f"#{best_building.html_id}")
