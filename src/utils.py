@@ -49,3 +49,7 @@ def log(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, t.Awaitable[_R]]: 
         return await f(*args, **kwargs)
 
     return wrapper
+
+
+def extract_number_from_string(s: str) -> float:
+    return float(s.strip().removesuffix("s").removesuffix(" cookie").replace(",", ""))
