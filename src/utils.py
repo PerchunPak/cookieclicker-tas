@@ -4,6 +4,8 @@ import typing as t
 from functools import wraps
 from pathlib import Path
 
+from loguru import logger
+
 BASE_DIR = Path(__file__).parent.parent
 (BASE_DIR / "data").mkdir(exist_ok=True)
 
@@ -36,5 +38,14 @@ def async_to_sync(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, _R]:  # 
     @wraps(f)
     def wrapper(*args, **kwargs):
         return asyncio.run(f(*args, **kwargs))  # type: ignore[arg-type] # "Callable" != "Awaitable" for some reason
+
+    return wrapper
+
+
+def log(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, t.Awaitable[_R]]:  # type: ignore[misc] # Explicit "Any" is not allowed
+    @wraps(f)
+    async def wrapper(*args, **kwargs):
+        logger.trace(f"{f.__name__}({args=}, {kwargs=})")
+        return await f(*args, **kwargs)
 
     return wrapper

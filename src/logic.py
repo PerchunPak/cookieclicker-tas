@@ -1,68 +1,60 @@
 import typing as t
-import zipfile
 from contextlib import asynccontextmanager
-from pathlib import Path
 
-import aiohttp
 from loguru import logger
-from playwright.async_api import BrowserContext, async_playwright
+from playwright.async_api import Browser, Page, async_playwright
 
-from src.utils import BASE_DIR
+from src.utils import log
 
 
 class Logic:
-    def __init__(self, browser: BrowserContext) -> None:
-        self.page = browser.pages[0]
+    def __init__(self, browser: Browser, page: Page) -> None:
         self.browser = browser
+        self.page = page
 
     @classmethod
     @asynccontextmanager
     async def init(cls) -> t.AsyncIterator[t.Self]:
-        adblock_path = await cls.download_adblock()
+        for method in dir(cls):  # decorate everything with `utils.log`
+            if not method.startswith("_") or method == "init":
+                setattr(cls, method, log(getattr(cls, method)))
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch_persistent_context(
-                user_data_dir="data/browser",
-                headless=False,
-                args=[
-                    f"--disable-extensions-except={adblock_path}",
-                    f"--load-extension={adblock_path}",
-                ],
-            )
-            page = browser.pages[0]
+            browser = await p.chromium.launch(headless=False)
+            page = await browser.new_page()
+            await page.goto("https://orteil.dashnet.org/cookieclicker/", wait_until="domcontentloaded")
+            await page.evaluate("window.localStorageSet('CookieClickerLang', 'EN');")  # set language
+            await page.wait_for_load_state("networkidle")
 
-            logger.info("Waiting for uBlock Origin to initialise...")
-            await page.wait_for_timeout(1000)
+            yield cls(browser, page)
 
-            await page.goto("https://orteil.dashnet.org/cookieclicker/")
-            yield cls(browser)
             await browser.close()
 
-    @staticmethod
-    async def download_adblock() -> Path:
-        adblock_dir = BASE_DIR / "data" / "adblock"
-        adblock_dir.mkdir(exist_ok=True)
-        archive_path = adblock_dir / "uBlock0.chromium.zip"
-        output_path = adblock_dir / "uBlock0.chromium"
+    async def remove_ads(self) -> None:
+        elements_to_block = [
+            "#google_esf",  # root google ad stuff
+            "#smallSupport,.ifNoAds",  # ads upper upgrades
+            "#support,#detectAds",  # under buildings
+            "body > *:not(#wrapper)",  # other ads in body tag
+        ]
+        await self.page.evaluate(
+            f"for (const el of document.querySelectorAll('{", ".join(elements_to_block)}')) el.remove();"
+        )
 
-        if output_path.exists():
-            logger.info("Adblock is already downloaded.")
-            return output_path
+    async def set_settings(self) -> None:
+        await self.page.click("#prefsButton > .subButton")
+        await self.page.fill("#volumeSlider", "0")
+        await self.page.click("#fancyButton")
+        await self.page.click("#particlesButton")
+        await self.page.click("#numbersButton")
+        await self.page.click("#milkButton")
+        await self.page.click("#wobblyButton")
+        await self.page.click("#monospaceButton")
+        await self.page.click("#formatButton")
+        await self.page.click("#notifsButton")
+        await self.page.click("#prefsButton > .subButton")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://github.com/gorhill/uBlock/releases/latest") as resp:
-                version = resp.url.parts[-1]
-            logger.info(f"Latest uBlock version is {version}. Downloading...")
-            async with session.get(
-                f"https://github.com/gorhill/uBlock/releases/latest/download/uBlock0_{version}.chromium.zip"
-            ) as resp:
-                with archive_path.open("wb") as f:  # this is pre-start of program, we can allow sync code
-                    f.write(await resp.read())
-
-            with zipfile.ZipFile(str(archive_path), "r") as zip_ref:
-                zip_ref.extractall(
-                    str(output_path.parent)
-                )  # inside the archive is a folder, so we extract it to the parent folder
-            logger.success("uBlock is downloaded.")
-
-        return output_path
+    async def rename_bakery(self) -> None:
+        await self.page.click("#bakeryName")
+        await self.page.fill("#bakeryNameInput", "Perchun's TAS")
+        await self.page.click("#promptOption0")

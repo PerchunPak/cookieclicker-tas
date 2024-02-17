@@ -14,8 +14,11 @@ async def main(
     logger.info("Hello World!")
 
     async with Logic.init() as logic:
-        page = logic.browser.pages[0]
-        await page.wait_for_timeout(500000)
+        await logic.remove_ads()
+        await logic.set_settings()
+        await logic.rename_bakery()
+
+        await logic.page.wait_for_timeout(500000)
 
 
 if __name__ == "__main__":
