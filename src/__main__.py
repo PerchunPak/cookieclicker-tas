@@ -23,6 +23,7 @@ async def main(
         logger.success("All setup done! Starting to run infinite loop!")
 
         while True:
+            await logic.collect_golden_cookies()
             await logic.update_balance()
             await logic.buy_buildings()
             await logic.buy_upgrades()

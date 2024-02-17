@@ -125,3 +125,8 @@ class Logic:
             if price <= self.balance:
                 logger.info(f"Buying upgrade {upgrade_id} for {price} cookies")
                 await self.page.click(f"#{upgrade_id}")
+
+    async def collect_golden_cookies(self) -> None:
+        cookies = await self.page.query_selector_all("#shimmers > .shimmer")
+        for cookie in cookies:
+            await cookie.click()
