@@ -2,6 +2,10 @@
 import asyncio
 import typing as t
 from functools import wraps
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent.parent
+(BASE_DIR / "data").mkdir(exist_ok=True)
 
 
 class Singleton(type):

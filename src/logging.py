@@ -1,4 +1,6 @@
-import enum, sys
+import enum
+import sys
+
 from loguru import logger
 
 
