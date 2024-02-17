@@ -1,3 +1,4 @@
+import typing as t
 import zipfile
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -39,7 +40,7 @@ async def download_adblock() -> Path:
 
 
 @asynccontextmanager
-async def start_browser() -> BrowserContext:
+async def start_browser() -> t.AsyncIterator[BrowserContext]:
     adblock_path = await download_adblock()
 
     async with async_playwright() as p:

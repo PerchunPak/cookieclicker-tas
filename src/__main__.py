@@ -8,7 +8,7 @@ from src.start_browser import start_browser
 
 @utils.async_to_sync
 async def main(
-    logging_level: src.logging.LoggingLevel = "info",
+    logging_level: src.logging.LoggingLevel = "info",  # type: ignore[assignment] # typer magic
 ) -> None:
     src.logging.setup_logging(logging_level)
     logger.info("Hello World!")

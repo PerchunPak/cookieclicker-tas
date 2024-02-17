@@ -29,12 +29,12 @@ class Singleton(type):
 
 
 _P = t.ParamSpec("_P")
-_R = t.TypeVar("_R", bound=t.Any)
+_R = t.TypeVar("_R", bound=t.Any)  # type: ignore[misc] # Explicit "Any" is not allowed
 
 
-def async_to_sync(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, _R]:
+def async_to_sync(f: t.Callable[_P, t.Awaitable[_R]]) -> t.Callable[_P, _R]:  # type: ignore[misc] # Explicit "Any" is not allowed
     @wraps(f)
     def wrapper(*args, **kwargs):
-        return asyncio.run(f(*args, **kwargs))
+        return asyncio.run(f(*args, **kwargs))  # type: ignore[arg-type] # "Callable" != "Awaitable" for some reason
 
     return wrapper
