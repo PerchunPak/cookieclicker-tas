@@ -3,7 +3,7 @@ from loguru import logger
 
 import src.logging
 from src import utils
-from src.start_browser import start_browser
+from src.logic import Logic
 
 
 @utils.async_to_sync
@@ -13,8 +13,8 @@ async def main(
     src.logging.setup_logging(logging_level)
     logger.info("Hello World!")
 
-    async with start_browser() as browser:
-        page = browser.pages[0]
+    async with Logic.init() as logic:
+        page = logic.browser.pages[0]
         await page.wait_for_timeout(500000)
 
 
