@@ -20,7 +20,7 @@ class Logic:
     @asynccontextmanager
     async def init(cls) -> t.AsyncIterator[t.Self]:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
+            browser = await p.chromium.launch(headless=False, args=["--start-maximized"])
             page = await browser.new_page()
             logger.info("Navigating to page...")
             await page.goto("https://orteil.dashnet.org/cookieclicker/", wait_until="domcontentloaded")
