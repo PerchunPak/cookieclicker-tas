@@ -76,7 +76,7 @@ class Logic:
             except Exception as e:
                 logger.exception(e)
             else:
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.0001)
 
     async def click_cookie_in_the_background(self) -> None:
         logger.info("Starting clicking cookie in the background...")

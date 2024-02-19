@@ -22,7 +22,7 @@ Future versions may break something.
 - Automatically sets the most performant settings.
 - Automatically opens "Stats" page.
 - Automatically renames bakery (cuz it gives an achievement so why not).
-- Automatically clicks the cookie every 0.001 second.
+- Automatically clicks the cookie every 0.0001 second.
 - Automatically collects golden cookies.
 - Automatically buys the most efficient buildings at the moment (cookies per second divided by cost - no the best formula, but good enough).
 - Automatically buys upgrades.
