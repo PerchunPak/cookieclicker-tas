@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import typing as t
 from contextlib import asynccontextmanager
 
@@ -15,6 +16,8 @@ class Logic:
         self.page = page
 
         self.balance = 0
+        self.old_balance = 0
+        self.produced_per_last_second = 0
 
     @classmethod
     @asynccontextmanager
@@ -87,6 +90,12 @@ class Logic:
         assert element is not None
         self.balance = int(extract_number_from_string(await element.inner_text()))
 
+        produced_per_last_second = self.balance - self.old_balance
+        if produced_per_last_second > 0:  # if we bought something, this might be negative
+            self.produced_per_last_second = produced_per_last_second
+
+        self.old_balance = self.balance
+
     async def _get_buyable_buildings(self) -> list[Building]:
         buildings = await self.page.query_selector_all("#products > .product.unlocked")
 
@@ -101,15 +110,33 @@ class Logic:
         if buildings[0].produces is None:
             return buildings[0]
 
-        def calculate_coefficient(index: int, building: Building) -> float:
-            # `type: ignore` because `buildings[index - 1].produces` can be None only if `index` is 0,
-            # and we end up with `buildings[-1].produces` which is almost always `None`
-            #
-            # we check for this a few lines above
-            produces_per_second = building.produces or buildings[index - 1].produces * 10  # type: ignore[operator]
-            return produces_per_second / building.costs
+        coefficients: dict[int, float] = {}
+        for i, building in enumerate(buildings):
+            produces_per_second = building.produces
 
-        return max(enumerate(buildings), key=lambda x: calculate_coefficient(*x))[1]
+            shift = 0
+            for shift in itertools.count():
+                if buildings[i - shift].produces is not None:
+                    produces_per_second = buildings[i - shift].produces * (10**shift)
+                    break
+            assert produces_per_second is not None
+
+            payback_period = building.costs / produces_per_second
+
+            if len(coefficients) >= 2:
+                time_to_earn = (building.costs - self.balance) / self.produced_per_last_second
+                profitability_of_second_best = sorted(coefficients.values())[1]
+                if building.costs > self.balance and time_to_earn > (profitability_of_second_best / 2):
+                    payback_period = float("inf")
+
+            coefficients[building.id] = payback_period
+
+        the_best_building_id = min(coefficients.items(), key=lambda x: x[1])[0]
+        logger.trace(f"{the_best_building_id=}")
+        for building in buildings:
+            if building.id == the_best_building_id:
+                return building
+        raise ValueError("No building found. How is that?")
 
     async def buy_buildings(self) -> None:
         buildings = await self._get_buyable_buildings()
