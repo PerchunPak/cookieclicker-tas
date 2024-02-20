@@ -101,7 +101,15 @@ class Logic:
         if buildings[0].produces is None:
             return buildings[0]
 
-        return max(enumerate(buildings), key=lambda x: x[1].produces or buildings[x[0] - 1].produces * 10)[1]  # type: ignore[operator] # it just cant
+        def calculate_coefficient(index: int, building: Building) -> float:
+            # `type: ignore` because `buildings[index - 1].produces` can be None only if `index` is 0,
+            # and we end up with `buildings[-1].produces` which is almost always `None`
+            #
+            # we check for this a few lines above
+            produces_per_second = building.produces or buildings[index - 1].produces * 10  # type: ignore[operator]
+            return produces_per_second / building.costs
+
+        return max(enumerate(buildings), key=lambda x: calculate_coefficient(*x))[1]
 
     async def buy_buildings(self) -> None:
         buildings = await self._get_buyable_buildings()
