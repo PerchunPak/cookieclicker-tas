@@ -5,7 +5,7 @@ from loguru import logger
 
 import src.logging
 from src import utils
-from src.logic import Logic
+from src.logic.all import AllLogic
 
 
 @utils.async_to_sync
@@ -15,7 +15,7 @@ async def main(
     src.logging.setup_logging(logging_level)
     logger.info("Hello World!")
 
-    async with Logic.init() as logic:
+    async with AllLogic.init() as logic:
         await logic.remove_ads()
         await logic.set_settings()
         await logic.open_stats_page()
