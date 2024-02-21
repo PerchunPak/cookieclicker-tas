@@ -23,12 +23,16 @@ async def main(
         await logic.click_cookie_in_the_background()
         logger.success("All setup done! Starting to run infinite loop!")
 
-        while True:
+        while logic.balance <= 1_000_000:
             await logic.collect_golden_cookies()
             await logic.update_balance()
             await logic.buy_buildings()
             await logic.buy_upgrades()
             await asyncio.sleep(1)
+
+        logger.success("Done! Balance is over 1 million!")
+        logger.info("Sleeping for 10 minutes and exiting...")
+        await logic.page.wait_for_timeout(10 * 60 * 1000)
 
 
 if __name__ == "__main__":
