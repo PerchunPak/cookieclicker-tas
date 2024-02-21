@@ -130,7 +130,11 @@ class Logic:
 
             payback_period = building.costs / produces_per_second
 
-            if len(coefficients) >= 2:
+            # if building produces less than 5% than we do per second, it is not worth buying
+            if produces_per_second < (self.produced_per_last_second * 0.05):
+                payback_period = float("inf")
+
+            if payback_period != float("inf") and len(coefficients) >= 2:
                 # if time to earn money for the building is longer than a payback
                 # period of the previous building, then it is not worth buying it
                 time_to_earn = (building.costs - self.balance) / self.produced_per_last_second

@@ -28,6 +28,7 @@ async def main(
             await logic.update_balance()
             await logic.buy_buildings()
             await logic.buy_upgrades()
+            logger.trace("Cycle done, balance is: {}", logic.balance)
             await asyncio.sleep(1)
 
         logger.success("Done! Balance is over 1 million!")
