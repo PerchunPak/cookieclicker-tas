@@ -18,7 +18,7 @@ python = "^3.12,<4"
 
 playwright = "~1.42"
 rich = "~13.7"
-typer = "~0.9"
+typer = "~0.10"
 loguru = "~0.7"
 aiohttp = "~3.9"
 
